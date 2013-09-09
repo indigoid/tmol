@@ -105,6 +105,9 @@ my $CONFIG = {
 	tablepath	=> "$ENV{HOME}/Code/tables/data"
 };
 
+GetOptions($CONFIG, qw(listenport=i listenaddr=s tablepath=s))
+	or die "usage: $0 [OPTIONS]\n";
+
 my $httpd = Table::HTTPD->new(
 	LocalPort	=> $CONFIG->{listenport},
 	LocalAddr	=> $CONFIG->{listenaddr},
