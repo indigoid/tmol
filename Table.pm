@@ -20,6 +20,15 @@ sub random {
 	return $result->action;
 }
 
+sub one_of_each {
+	my $self = shift;
+	my @results;
+	for my $slot (@{$self->get_slots}) {
+		push @results, $slot->action;
+	}
+	return @results;
+}
+
 sub add {
 	my $self = shift;
 	for my $new (@_) {
@@ -42,7 +51,6 @@ sub add {
 
 sub decode_table_entry {
 	my ($self, $line) = @_;
-
 	# split input into the major parts - low, high and specification
 	my ($low, $high, $what);
 	if ($line =~ /^(\d+)\s+(\S+.*)/) {
@@ -76,12 +84,13 @@ sub decode_table_entry {
 
 	# decode multi/group dice spec
 	my ($dice, $multimode) = (undef,undef);
-	if ($what =~ s/^(group|multi)\s+(\d+d\d+([+-]\d+)?(x\d+)?)\s*//i) {
+	if ($what =~ s/^(oneofeach|group|multi)\s+(\d+d\d+([+-]\d+)?(x\d+)?)\s*//i) {
 		($multimode, $dice) = ($1, $2);
 	}
 
 	# decode subtable spec and load up the subtable
-	# happens again every time the table is loaded, but blehhh RAM cheap
+	# happens again every time the table is loaded
+	# blehhh RAM cheap programmer lazy
 	my $subtable = undef;
 	if ($what =~ s/^@(.+)//) {
 		$subtable = Table->new({tablepath => $self->get_tablepath});
@@ -142,16 +151,13 @@ sub new_even_subtable {
 	my ($self, $parentbits, @ents) = @_;
 	my $subtable = Table->new;
 	my $i = 1;
-
 	for my $ent (@ents) {
-		$subtable->add(
-			Table::Slot->new({
-				low		=> $i,
-				high 		=> $i,
-				valuespec	=> $parentbits->{valuespec},
-				what		=> $ent
-			})
-		);
+		# decode, but even-type specs don't have slot numbers...
+		# so we fudge one and then ignore it afterwards
+		my %childbits = $self->decode_table_entry("1 $ent");
+		$childbits{high} = $childbits{low} = $i;
+		$childbits{valuespec} ||= $parentbits->{valuespec};
+		$subtable->add(Table::Slot->new({%childbits}));
 		$i++;
 	}
 	return $subtable;
