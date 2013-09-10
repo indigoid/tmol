@@ -1,0 +1,3 @@
+1	{ even: red; blue; green; pink; yellow; black; white; brown; purple; orange; }
+2	{ even: rusty; corroded; wet; dirty; oily; }
+3	multi 1d4+1x10 { even: steel; iron; bronze; brass; copper; gold; platinum; silver; electrum; tin; }

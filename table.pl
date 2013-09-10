@@ -9,7 +9,7 @@ use File::Spec::Functions qw(abs2rel);
 use Data::Dumper;
 
 my $CONFIG = {
-	tablepath	=> "$ENV{HOME}/Code/tables/data",
+	tablepath	=> "$ENV{HOME}/Code/tmol/data",
 	count		=> 1000,
 };
 
