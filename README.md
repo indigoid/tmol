@@ -44,11 +44,30 @@ ignored.
 ## Multiple items
 
 ```
+# return 4-19 caltrops
 36-40	multi 3d6+1 caltrops
-# this also works with subtables
+
+# this also works with subtables, but it will roll from the subtable
+# every time - 1d4+1 times in this case, so multiple different items
+# may be selected (eg. wineskins AND iron rations AND salted pork)
 41-45	multi 1d4+1 { 1-3 wineskin; 4-8 iron rations; 9-10 salted pork; }
+
 # or if you want them to select multiple of all the same item,
 # eg. randomly choose wineskin OR iron rations OR salted pork, then return
 # 1d4+1 of whichever one was chosen
 41-45	group 1d4+1 { 1-3 wineskin; 4-8 iron rations; 9-10 salted pork; }
+
+# the 'oneofeach' qualifier will 'execute' every item in a subtable
+# eg. this might return a wineskin, 2 iron rations and, 10% of the time,
+# some cheese
+46-47	oneofeach 1d6 { even: wineskin; multi 1d4 iron rations; 10% cheese; }
+```
+
+## Chance
+
+```
+# you can put a percentage before any table entry to make it that likely,
+# eg. if this table slot comes up on the dice, a percentage roll then
+# happens. eg. 2% chance of getting something incredibly valuable
+48-50	2% { even: Steve Jobs; Nelson Mandela; Arnold Schwarzenegger; }
 ```
