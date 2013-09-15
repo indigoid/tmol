@@ -40,19 +40,16 @@ sub table_results {
 
 sub table_response {
 	my ($self, $tablename) = @_;
-	my $title = "webtable: $tablename";
-	my $preamble = join('', start_html($title), h1($title));
 	my %outputs = $self->table_results($tablename);
 	if (scalar keys %outputs < 1) {
-		return join('', $preamble,p('No results returned.'),end_html);
+		return join('', p('No results returned.'));
 	}
 	return join("\n",
-		$preamble,
 		table(
-			th({-align=>'left'}, [qw(Qty Value Description)]),
+			th([qw(Qty Value Description)]),
 			map {
 				Tr(
-					td({-align=>'left'}, [
+					td([
 						$outputs{$_},
 						split(m'//SPLITHERE//', $_)
 					])
@@ -63,28 +60,70 @@ sub table_response {
 	);
 }
 
+sub index_response {
+	opendir(my $dh, '.') or die("can't opendir: $!\n");
+	return	ul(
+			li([
+				map { a({href=>"/t/$_"}, $_) }
+				sort
+				map { s/\.table$//; $_ }
+				grep { /^[\w-]+\.table$/ && -f && -s && -r }
+				readdir $dh
+			])
+		);
+}
+
 sub html_response {
 	my $self = shift;
 	my $headers = HTTP::Headers->new;
 	my $response = HTTP::Response->new(RC_OK);
+	my $title = "web tables: " . shift;
+	my $preamble = join('',
+		start_html({
+			-style => { -code=>$self->stylesheet },
+			-title => $title
+		}),
+		h1($title)
+	);
 	$response->header('Content-Type' => 'text/html');
-	$response->content(join('', @_));
+	$response->content(join('', $preamble, @_), end_html);
 	return $response;
+}
+
+sub read_file {
+	my ($self, $filename) = @_;
+	open(my $fh, '<', $filename) or return undef;
+	local $/ = undef;
+	return scalar <$fh>
+}
+
+sub stylesheet {
+	return shift->read_file('style.css');
 }
 
 sub mainloop {
 	my $self = shift;
 	while (my $conn = $self->accept) {
 		while (my $req = $conn->get_request) {
-			if ($req->method eq 'GET'
-				&& $req->uri->path =~ m|/t/([\w-]+)|) {
-				$conn->send_response(
-					$self->html_response(
-						$self->table_response($1)
-					)
-				);
-			} else {
-				$conn->send_error(RC_FORBIDDEN);
+			if ($req->method eq 'GET') {
+				if ($req->uri->path =~ m|/t/([\w-]+)|) {
+					$conn->send_response($self->html_response(
+						$1, map { (
+							h2("result #$_:"),
+							$self->table_response($1)
+						) } 1 .. 10,
+					));
+					goto DONE;
+				}
+				if ($req->uri->path eq '/') {
+					$conn->send_response($self->html_response(
+						'index',
+						$self->index_response('index')
+					));
+					goto DONE;
+				}
+				ERR: $conn->send_error(RC_FORBIDDEN);
+				DONE:
 			}
 		}
 		undef $conn;
