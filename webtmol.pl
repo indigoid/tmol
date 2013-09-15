@@ -46,7 +46,7 @@ sub table_response {
 	}
 	return join("\n",
 		table(
-			th([qw(Qty Value Description)]),
+			th(['Qty', 'Value (each)', 'Description']),
 			map {
 				Tr(
 					td([
@@ -54,7 +54,7 @@ sub table_response {
 						split(m'//SPLITHERE//', $_)
 					])
 				)
-			} keys %outputs
+			} sort { $outputs{$a} <=> $outputs{$b} } keys %outputs
 		),
 		end_html
 	);
