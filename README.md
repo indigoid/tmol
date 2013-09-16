@@ -71,3 +71,14 @@ ignored.
 # happens. eg. 2% chance of getting something incredibly valuable
 48-50	2% { even: Steve Jobs; Nelson Mandela; Arnold Schwarzenegger; }
 ```
+
+## Additional properties
+```
+# The DMG has a few tables where there is a directive to reroll on the
+# same table and then add extra properties based on some other table.
+# eg. roll a weapon type and then add magical properties (sundering,
+# vorpal, etc) to whatever weapon was rolled. This mechanism isn't
+# directly replicated but it is pretty close. It could be achieved
+# with a construct like the below
+1-96	@weapons.table
+97-100	append @properties.table @weapons.table

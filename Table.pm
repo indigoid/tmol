@@ -88,12 +88,22 @@ sub decode_table_entry {
 		($multimode, $dice) = ($1, $2);
 	}
 
+	# decode append-table spec
+	my $append = undef;
+	if ($what =~ s/^append\s+@([\w-]+.table)\s*//i) {
+		$append = Table->new({tablepath => $self->get_tablepath});
+		$append->add_from_file($1);
+	}
+
 	# decode subtable spec and load up the subtable
 	# happens again every time the table is loaded
 	# blehhh RAM cheap programmer lazy
 	my $subtable = undef;
 	if ($what =~ s/^@(.+)//) {
-		$subtable = Table->new({tablepath => $self->get_tablepath});
+		$subtable = Table->new({
+			tablepath => $self->get_tablepath,
+			append => $append
+		});
 		$subtable->add_from_file($1);
 	}
 	return (
@@ -102,6 +112,7 @@ sub decode_table_entry {
 		percent		=> $percent,
 		dice		=> $dice,
 		multimode	=> $multimode,
+		append		=> $append,
 		subtable	=> $subtable,
 		valuespec	=> $vdice,
 		what		=> $what
@@ -120,7 +131,7 @@ sub add_from_file {
 
 		# decode everything except for inline subtables
 		my %bits = $self->decode_table_entry($line);
-
+		$bits{append} ||= $self->{append};
 		# decode an inline subtable entry (no inline nesting!)
 		if ($bits{what} =~ /{\s*(even:)?\s*\s*([^;]+(\s*;\s*[^;]+){0,})\s*(;)?}/) {
 			my @ents = split(/\s*;\s*/, $2);
@@ -139,8 +150,9 @@ sub new_subtable {
 	my $subtable = Table->new;
 	for my $ent (@ents) {
 		my %childbits = $self->decode_table_entry($ent);
-		if ($parentbits->{valuespec} && ! $childbits{valuespec}) {
-			$childbits{valuespec} = $parentbits->{valuespec};
+		# pass down inheritable properties
+		for my $prop (qw(valuespec append)) {
+			$childbits{$prop} ||= $parentbits->{$prop};
 		}
 		$subtable->add(Table::Slot->new({ %childbits }));
 	}
@@ -156,7 +168,10 @@ sub new_even_subtable {
 		# so we fudge one and then ignore it afterwards
 		my %childbits = $self->decode_table_entry("1 $ent");
 		$childbits{high} = $childbits{low} = $i;
-		$childbits{valuespec} ||= $parentbits->{valuespec};
+		# pass down inheritable properties
+		for my $prop (qw(valuespec append)) {
+			$childbits{$prop} ||= $parentbits->{$prop};
+		}
 		$subtable->add(Table::Slot->new({%childbits}));
 		$i++;
 	}

@@ -17,6 +17,7 @@ Table::Slot->mk_accessors(
 	qw(dice),	# how many instances, if random? (dice spec eg. 1d4+1)
 	qw(quantity),	# how many instances, if fixed?
 	qw(subtable),	# name of subtable to query instead of 'what'
+	qw(append),	# another subtable to query for additional properties
 	qw(multimode),	# if 'group', each item emitted once
 			# if 'multi', each item emitted separately each time,
 			# ie. multi with a subtable may generate non-matching
@@ -52,8 +53,17 @@ sub _get_one {
 		return grep { $_ ne '-' } $self->get_subtable->random;
 	} else {
 		return map {
+			my $appendages = '';
+			if ($self->get_append) {
+				$appendages =
+					' ('
+					. join(', ',
+						map { $_->get_what }
+							$self->get_append->random) 
+					. ')';
+			}
 			Table::Result->new({
-				what		=> $self->get_what,
+				what		=> $self->get_what . $appendages,
 				valuespec	=> $self->get_valuespec
 			})
 		} grep { $_ ne '-' } $self->get_what;
