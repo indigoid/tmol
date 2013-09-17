@@ -4,7 +4,7 @@ use POSIX qw(uname);
 
 sub tablepath {
 	my $uname = (uname)[0];
-	if ($uname eq 'Windows') {
+	if ($uname =~ /^Windows/) {
 		return "$ENV{USERPROFILE}/tmol"
 	}
 	return "$ENV{HOME}/tmol"
