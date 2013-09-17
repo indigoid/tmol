@@ -1,2 +1,2 @@
 1-9	multi 1d4 { even: sword; spear; bow; knife; dagger; kris; halberd; }
-9-10	append @append-properties.table { even: sword; spear; bow; knife; dagger; kris; halberd; }
+10	append @append-properties.table { even: sword; spear; bow; knife; dagger; kris; halberd; }
