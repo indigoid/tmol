@@ -1,15 +1,15 @@
-package Table;
+package TMOL::Table;
 
 use base qw(Class::Accessor);
 use strict;
 use warnings;
 
-Table->follow_best_practice;
-Table->mk_accessors(qw(tablepath slots high low));
+TMOL::Table->follow_best_practice;
+TMOL::Table->mk_accessors(qw(tablepath slots high low));
 
 use Scalar::Util qw(blessed);
 use Carp qw(cluck croak);
-use Table::Slot;
+use TMOL::Slot;
 use File::Spec::Functions qw(catfile);
 use Data::Dumper;
 
@@ -32,7 +32,7 @@ sub one_of_each {
 sub add {
 	my $self = shift;
 	for my $new (@_) {
-		if (ref($new) && $new->isa('Table::Slot')) {
+		if (ref($new) && $new->isa('TMOL::Slot')) {
 			push @{$self->{slots}}, $new;
 			for my $cacheslot ($new->get_low .. $new->get_high) {
 				$self->{_cache}->{$cacheslot} = $new;
@@ -44,7 +44,7 @@ sub add {
 				$self->set_low($new->get_low);
 			}
 		} else {
-			croak "Table::add expects Table::Slot refs only";
+			croak "TMOL::Table::add expects TMOL::Slot refs only";
 		}
 	}
 }
@@ -91,7 +91,7 @@ sub decode_table_entry {
 	# decode append-table spec
 	my $append = undef;
 	if ($what =~ s/^append\s+@([\w-]+.table)\s*//i) {
-		$append = Table->new({tablepath => $self->get_tablepath});
+		$append = TMOL::Table->new({tablepath => $self->get_tablepath});
 		$append->add_from_file($1);
 	}
 
@@ -100,7 +100,7 @@ sub decode_table_entry {
 	# blehhh RAM cheap programmer lazy
 	my $subtable = undef;
 	if ($what =~ s/^@(.+)//) {
-		$subtable = Table->new({
+		$subtable = TMOL::Table->new({
 			tablepath => $self->get_tablepath,
 			append => $append
 		});
@@ -141,27 +141,27 @@ sub add_from_file {
 				$bits{subtable} = $self->new_subtable(\%bits, @ents);
 			}
 		}
-		$self->add(Table::Slot->new({%bits}));
+		$self->add(TMOL::Slot->new({%bits}));
 	}
 }
 
 sub new_subtable {
 	my ($self, $parentbits, @ents) = @_;
-	my $subtable = Table->new;
+	my $subtable = TMOL::Table->new;
 	for my $ent (@ents) {
 		my %childbits = $self->decode_table_entry($ent);
 		# pass down inheritable properties
 		for my $prop (qw(valuespec append)) {
 			$childbits{$prop} ||= $parentbits->{$prop};
 		}
-		$subtable->add(Table::Slot->new({ %childbits }));
+		$subtable->add(TMOL::Slot->new({ %childbits }));
 	}
 	return $subtable;
 }
 
 sub new_even_subtable {
 	my ($self, $parentbits, @ents) = @_;
-	my $subtable = Table->new;
+	my $subtable = TMOL::Table->new;
 	my $i = 1;
 	for my $ent (@ents) {
 		# decode, but even-type specs don't have slot numbers...
@@ -172,7 +172,7 @@ sub new_even_subtable {
 		for my $prop (qw(valuespec append)) {
 			$childbits{$prop} ||= $parentbits->{$prop};
 		}
-		$subtable->add(Table::Slot->new({%childbits}));
+		$subtable->add(TMOL::Slot->new({%childbits}));
 		$i++;
 	}
 	return $subtable;

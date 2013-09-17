@@ -2,14 +2,15 @@
 
 use strict;
 use warnings;
-use Table;
+use TMOL::Platform;
+use TMOL::Table;
 use Getopt::Long;
 use File::Find;
 use File::Spec::Functions qw(abs2rel);
 use Data::Dumper;
 
 my $CONFIG = {
-	tablepath	=> "$ENV{HOME}/Code/tmol/data",
+	tablepath	=> TMOL::Platform::tablepath,
 	count		=> 1000,
 };
 
@@ -17,7 +18,7 @@ GetOptions($CONFIG, qw(tablepath=s count=i list))
 	or die "usage: $0 [--tablepath=/tables/directory] [--count=N] [--list] table_name\n";
 
 chdir $CONFIG->{tablepath}
-	or die "can't chdir to data directory" . $CONFIG->{tablepath} . ": $!\n";
+	or die "can't chdir to data directory " . $CONFIG->{tablepath} . ": $!\n";
 
 if ($CONFIG->{list}) {
 	my @tables;
@@ -35,7 +36,7 @@ if ($CONFIG->{list}) {
 }
 
 my $file = shift(@ARGV) || "mundane.table";
-my $table = Table->new({tablepath => $CONFIG->{tablepath}});
+my $table = TMOL::Table->new({tablepath => $CONFIG->{tablepath}});
 $table->add_from_file($file);
 
 sub format_value {

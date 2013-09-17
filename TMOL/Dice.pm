@@ -1,12 +1,12 @@
-package Dice;
+package TMOL::Dice;
 
 use base qw(Class::Accessor);
 use Carp;
 use strict;
 use warnings;
 
-Dice->follow_best_practice;
-Dice->mk_accessors(qw(ndice dietype modifier multiplier));
+TMOL::Dice->follow_best_practice;
+TMOL::Dice->mk_accessors(qw(ndice dietype modifier multiplier));
 
 sub parse {
 	my ($self, $spec) = @_;

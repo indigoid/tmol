@@ -1,15 +1,15 @@
-package Table::Slot;
+package TMOL::Slot;
 
 use base qw(Class::Accessor);
 use strict;
 use warnings;
-use Dice;
-use Table::Result;
+use TMOL::Dice;
+use TMOL::Result;
 use Carp;
 use Data::Dumper;
 
-Table::Slot->follow_best_practice;
-Table::Slot->mk_accessors(
+TMOL::Slot->follow_best_practice;
+TMOL::Slot->mk_accessors(
 	qw(what),	# what this slot actually yields
 	qw(valuespec),	# dice-spec indicator of value
 	qw(low high),	# slot boundaries in the table
@@ -30,7 +30,7 @@ sub _determine_quantity {
 		return $self->get_quantity;
 	}
 	if ($self->get_dice) {
-		my $dice = Dice->new;
+		my $dice = TMOL::Dice->new;
 		$dice->parse($self->get_dice);
 		return $dice->roll;
 	}
@@ -62,7 +62,7 @@ sub _get_one {
 							$self->get_append->random) 
 					. ')';
 			}
-			Table::Result->new({
+			TMOL::Result->new({
 				what		=> $self->get_what . $appendages,
 				valuespec	=> $self->get_valuespec
 			})
@@ -77,7 +77,7 @@ sub action {
 	my $qty = $self->_determine_quantity;
 	if ($self->get_multimode && $self->get_multimode eq 'oneofeach') {
 		croak "oneofeach flag requires a subtable!\n"
-			unless $self->get_subtable->isa('Table');
+			unless $self->get_subtable->isa('TMOL::Table');
 		push @result, $self->get_subtable->one_of_each for (1 .. $qty);
 	} else {
 		@result = ( $self->_get_one );
