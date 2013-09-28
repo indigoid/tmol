@@ -5,7 +5,6 @@ use warnings;
 use base 'Class::Accessor';
 use Parse::RecDescent;
 use TMOL::Dice::Spec;
-use Carp;
 TMOL::Dice::Parser->follow_best_practice;
 TMOL::Dice::Parser->mk_accessors(qw/parser spec/);
 
@@ -27,10 +26,7 @@ END_GRAMMAR
 sub emit {
 	my ($self, $spec) = @_;
 	my $r = $self->get_parser->startrule($spec);
-	unless ($r) {
-		cluck("could not parse dice spec\n");
-		return undef;
-	};
+	return undef unless ($r);
 	my $sf = { ndice => 1, type => 6, addsub => 0, multiply => 1 };
 	$r = $r->{spec};
 	$self->set_spec($r);
